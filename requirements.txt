@@ -1,0 +1,4 @@
+pydantic>=2.9.0
+openai>=1.50.0
+PyPDF2>=3.0.1
+toml>=0.10.2
