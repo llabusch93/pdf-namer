@@ -3,17 +3,20 @@ import os
 from typing import List
 from concurrent.futures import ProcessPoolExecutor
 
-from pdf_processor import process_pdf
+from pdf_namer import process_pdf
 
 
 def main() -> None:
     """
-    Main entry point for the PDF processing CLI application.
+    Main entry point for the PDF naming CLI application.
     """
     parser = argparse.ArgumentParser(
         description="Process and rename PDF documents using AI."
     )
-    parser.add_argument("path", help="Path to a PDF file or directory containing PDFs")
+    parser.add_argument(
+        "path",
+        help="Path to a PDF file or directory containing PDFs"
+    )
     parser.add_argument(
         "-w", "--workers",
         type=int,
@@ -24,7 +27,7 @@ def main() -> None:
         "-l", "--language",
         type=str,
         required=True,
-        help="Language that the filenames should be generated in (default: german)",
+        help="Language for filename generation (default: german)",
     )
     args = parser.parse_args()
 

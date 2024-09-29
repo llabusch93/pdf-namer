@@ -5,7 +5,7 @@ import re
 
 def get_version():
     init_path = os.path.join(
-        os.path.dirname(__file__), "pdf_processor", "__init__.py"
+        os.path.dirname(__file__), "pdf_namer", "__init__.py"
     )
     with open(init_path, "r", encoding="utf-8") as f:
         content = f.read()
@@ -32,14 +32,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pdf-processor",
+    name="pdf-namer",
     version=get_version(),
     author="Laurence Labusch",
     author_email="laurence.labusch@gmail.com",
     description="A Linux-specific tool for naming PDF files",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/llabusch93/pdf-processor",
+    url="https://github.com/llabusch93/pdf-namer",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -50,7 +50,7 @@ setuptools.setup(
     install_requires=get_requirements(),
     entry_points={
         'console_scripts': [
-            'pdf-processor=pdf_processor.main:main',
+            'pdf-namer=pdf_namer.main:main',
         ],
     },
 )

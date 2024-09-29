@@ -1,6 +1,6 @@
-# PDF Processor
+# PDF Namer
 
-PDF Processor is a Python CLI application that processes PDF documents and renames them based on AI-generated descriptions. This tool is designed to help organize and manage collections of PDF documents by extracting meaningful information and creating standardized filenames.
+PDF Namer is a Python CLI application that processes PDF documents and renames them based on AI-generated descriptions. This tool is designed to help organize and manage collections of PDF documents by extracting meaningful information and creating standardized filenames.
 
 ## Features
 
@@ -14,8 +14,8 @@ PDF Processor is a Python CLI application that processes PDF documents and renam
 
 1. Clone this repository:
    ```
-   git clone https://github.com/llabusch93/pdf-processor.git
-   cd pdf-processor
+   git clone https://github.com/llabusch93/pdf-namer.git
+   cd pdf-namer
    ```
 
 2. Create a virtual environment and activate it:
@@ -39,25 +39,25 @@ PDF Processor is a Python CLI application that processes PDF documents and renam
 To process a single PDF file:
 
 ```
-pdf-processor /path/to/your/file.pdf
+pdf-namer /path/to/your/file.pdf
 ```
 
 To process all PDF files in a directory recursively:
 
 ```
-pdf-processor /path/to/your/directory
+pdf-namer /path/to/your/directory
 ```
 
 To specify the number of worker processes:
 
 ```
-pdf-processor /path/to/your/directory --workers 5
+pdf-namer /path/to/your/directory --workers 5
 ```
 
 To specify the language for filename generation:
 
 ```
-pdf-processor /path/to/your/file.pdf --language english
+pdf-namer /path/to/your/file.pdf --language english
 ```
 
 ## How it works
@@ -80,4 +80,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Author
 
 Laurence Labusch (laurence.labusch@gmail.com)
-
