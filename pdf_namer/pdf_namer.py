@@ -1,6 +1,7 @@
 import os
 import subprocess
 import PyPDF2
+from datetime import datetime
 from pydantic import BaseModel, Field
 from openai import OpenAI
 
@@ -26,6 +27,7 @@ def process_pdf(file_path: str, language: str) -> str:
 
     Args:
         file_path (str): Path to the PDF file to process.
+        language (str): The language to use for document kind and name.
 
     Returns:
         str: The new filename of the processed PDF.
@@ -141,6 +143,7 @@ def generate_filename(text: str, original_path: str, language: str) -> str:
     Args:
         text (str): Extracted text from the PDF.
         original_path (str): Original path of the PDF file.
+        language (str): The language to use for document kind and name.
 
     Returns:
         str: Generated filename in the format
@@ -164,7 +167,7 @@ The language of the document kind and name must be in
 1000 words of the document, and you must extract the following
 information that will be given as JSON object back:\n
 {{"date": "<The date of the document in the format of YYYY-MM-DD. \
-If no document date can be found, the current date is given>",
+If no document date can be found, use 'NO_DATE'>",
 \n"document_kind": "<The kind of the Document, e.g., Invoice, \
 Letter, Contract etc.>",
 \n"document_name": "<The naming for that document, e.g., 'Blood 
@@ -180,7 +183,7 @@ characters.>"}}
             {"role": "user", "content": truncated_text},
         ]
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             messages=messages,
             temperature=1,
             max_tokens=4096,
@@ -190,6 +193,11 @@ characters.>"}}
             response_format={"type": "json_object"},
         )
         pdf_info = PDFInfo.model_validate_json(response.choices[0].message.content)
+        
+        # If no date is found, use the current date
+        if pdf_info.date == "NO_DATE":
+            pdf_info.date = datetime.now().strftime("%Y-%m-%d")
+        
         return (
             f"{pdf_info.date} -- {pdf_info.document_kind} - "
             f"{pdf_info.document_name}.pdf"
