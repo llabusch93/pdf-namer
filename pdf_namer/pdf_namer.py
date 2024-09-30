@@ -17,7 +17,7 @@ class PDFInfo(BaseModel):
         ..., description="The kind of document (e.g., invoice, letter, brochure)"
     )
     document_name: str = Field(
-        ..., max_length=100, description="A brief description of the document content"
+        ..., max_length=200, description="A brief description of the document content"
     )
 
 
@@ -36,7 +36,9 @@ def process_pdf(file_path: str, language: str, force: bool = False) -> str:
     """
     current_filename = os.path.basename(file_path)
     if not force and is_filename_correct(current_filename):
-        print(f"Filename '{current_filename}' is already in the correct format. Skipping processing.")
+        print(
+            f"Filename '{current_filename}' is already in the correct format. Skipping processing."
+        )
         return current_filename
 
     if not has_text(file_path):
@@ -44,7 +46,7 @@ def process_pdf(file_path: str, language: str, force: bool = False) -> str:
 
     text = extract_text(file_path)
     new_name = generate_filename(text, file_path, language)
-    
+
     if new_name:
         rename_file(file_path, new_name)
         return new_name
@@ -62,7 +64,7 @@ def is_filename_correct(filename: str) -> bool:
     Returns:
         bool: True if the filename is in the correct format, False otherwise.
     """
-    pattern = r'^\d{4}-\d{2}-\d{2} -- .+ - .+\.pdf$'
+    pattern = r"^\d{4}-\d{2}-\d{2} -- .+ - .+\.pdf$"
     return bool(re.match(pattern, filename))
 
 
@@ -186,23 +188,49 @@ def generate_filename(text: str, original_path: str, language: str) -> str:
                 "content": [
                     {
                         "type": "text",
-                        "text": f"""You are a system designed to generate a filename
-for a given PDF document content that the user provides.
-The language of the document kind and name must be in
-{language}. You will get the first
-1000 words of the document, and you must extract the following
-information that will be given as JSON object back:\n
-{{"date": "<The date of the document in the format of YYYY-MM-DD. \
-If no document date can be found, use 'NO_DATE'>",
-\n"document_kind": "<The kind of the Document, e.g., Invoice, \
-Letter, Contract etc.>",
-\n"document_name": "<The naming for that document, e.g., 'Blood 
-Test results from Dr. Schwarz' or 'Leasing of Škoda Superb' 
-etc. Be VERY VERY specific for the description, e.g. name for
-what products an invoice is, or what exactly a letter or
-confirmation is about. The description must not exceed 80
-characters.>"}}
-""",
+                        "text": (
+                            """
+        You are an assistant specialized in analyzing PDF document content to generate 
+        standardized filenames. Your task is to extract specific information and return 
+        it in a strict JSON format. 
+        
+        **Instructions:**
+        
+        1. **Input:**
+           - You will receive the first 1000 words of a PDF document.
+           - The language for `document_kind` and `document_name` MUST be **{language}**.
+        
+        2. **Output:**
+           - Return a JSON object with the following fields:
+             - `"date"`: The date of the document in `YYYY-MM-DD` format. If no date is 
+               found, use `"NO_DATE"`.
+             - `"document_kind"`: The type of the document (e.g., Invoice, Letter, 
+               Contract) in **{language}**.
+             - `"document_name"`: A specific and concise description of the document 
+               content in **{language}**. Ensure:
+               - It does **not** include the date.
+               - It mentions the sender and recipient if available.
+               - It does **not** exceed 200 characters.
+        
+        3. **Format:**
+           - Ensure the response is a **valid JSON** object matching the structure above.
+           - Do not include any additional text, explanations, or markdown.
+        
+        **Examples:**
+            - {
+            "date": "2024-04-15",
+            "document_kind": "Invoice",
+            "document_name": "Blood Test Services Invoice from Dr. Schmidt to John Doe"
+            }
+            - {
+            "date": "NO_DATE",
+            "document_kind": "Letter",
+            "document_name": "Termination confirmation from Facebook Ltd. to Frederick 
+              Johnson"
+            }
+        
+        """
+                        ),
                     }
                 ],
             },
@@ -219,18 +247,20 @@ characters.>"}}
             response_format={"type": "json_object"},
         )
         pdf_info = PDFInfo.model_validate_json(response.choices[0].message.content)
-        
+
         # If no date is found, use the current date
         if pdf_info.date == "NO_DATE":
             pdf_info.date = datetime.now().strftime("%Y-%m-%d")
-        
+
         return (
             f"{pdf_info.date} -- {pdf_info.document_kind} - "
             f"{pdf_info.document_name}.pdf"
         )
     except Exception as e:
         print(f"Error generating filename: {str(e)}")
-        return os.path.basename(original_path)  # Return original filename if there's an error
+        return os.path.basename(
+            original_path
+        )  # Return original filename if there's an error
 
 
 def rename_file(old_path: str, new_name: str) -> None:
