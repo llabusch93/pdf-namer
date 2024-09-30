@@ -31,10 +31,18 @@ PDF Namer is a Python CLI application that processes PDF documents and renames t
    pip install -r requirements.txt
    ```
 
-4. Set up your OpenAI API key as an environment variable:
-   ```
-   export OPENAI_API_KEY=your_api_key_here
-   ```
+4. Set up your OpenAI API key. You have two options:
+
+   a. Set it as an environment variable:
+      ```
+      export OPENAI_API_KEY=your_api_key_here
+      ```
+
+   b. Store it in a file:
+      - Create a file named `.openai` in your home directory (`~/.openai`)
+      - Add your API key to this file (just the key, without any quotes or additional text)
+
+   The application will first check for the environment variable, and if not found, it will look for the `.openai` file in your home directory.
 
 ## Usage
 
