@@ -1,6 +1,7 @@
 import os
 import subprocess
 import PyPDF2
+import re
 from datetime import datetime
 from pydantic import BaseModel, Field
 from openai import OpenAI
@@ -20,7 +21,7 @@ class PDFInfo(BaseModel):
     )
 
 
-def process_pdf(file_path: str, language: str) -> str:
+def process_pdf(file_path: str, language: str, force: bool = False) -> str:
     """
     Process a PDF file: apply OCR if needed, extract text, generate a new
     filename using AI, and rename the file.
@@ -28,17 +29,41 @@ def process_pdf(file_path: str, language: str) -> str:
     Args:
         file_path (str): Path to the PDF file to process.
         language (str): The language to use for document kind and name.
+        force (bool): Force processing even if the filename is already correct.
 
     Returns:
         str: The new filename of the processed PDF.
     """
+    current_filename = os.path.basename(file_path)
+    if not force and is_filename_correct(current_filename):
+        print(f"Filename '{current_filename}' is already in the correct format. Skipping processing.")
+        return current_filename
+
     if not has_text(file_path):
         apply_ocr(file_path)
 
     text = extract_text(file_path)
     new_name = generate_filename(text, file_path, language)
-    rename_file(file_path, new_name)
-    return new_name
+    
+    if new_name:
+        rename_file(file_path, new_name)
+        return new_name
+    else:
+        return current_filename
+
+
+def is_filename_correct(filename: str) -> bool:
+    """
+    Check if the filename is already in the correct format.
+
+    Args:
+        filename (str): The filename to check.
+
+    Returns:
+        bool: True if the filename is in the correct format, False otherwise.
+    """
+    pattern = r'^\d{4}-\d{2}-\d{2} -- .+ - .+\.pdf$'
+    return bool(re.match(pattern, filename))
 
 
 def has_text(file_path: str) -> bool:
@@ -149,6 +174,7 @@ def generate_filename(text: str, original_path: str, language: str) -> str:
         str: Generated filename in the format
              "YYYY-MM-DD -- DOCUMENT_KIND - DOCUMENT_DESCRIPTION".
     """
+
     try:
         api_key = get_openai_api_key()
         client = OpenAI(api_key=api_key)
@@ -204,9 +230,7 @@ characters.>"}}
         )
     except Exception as e:
         print(f"Error generating filename: {str(e)}")
-        return os.path.basename(
-            original_path
-        )  # Return original filename if there's an error
+        return os.path.basename(original_path)  # Return original filename if there's an error
 
 
 def rename_file(old_path: str, new_name: str) -> None:
